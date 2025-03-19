@@ -2,10 +2,32 @@ import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import MovieList from "./components/MovieList";
+import MovieSearch from "./components/MovieSearch";
+import { MovieProvider } from "./Context/MovieProvider";
 
 function App() {
-  const [Moive, setMovie] = useState([]);
+  const [Movie, setMovie] = useState([]);
+  const [ratingMovie, setRatingMovie] = useState([]);
+  const [movieSearch, setMovieSearch] = useState([]);
+  const handleSearch = async (searchVal) => {
+    setMovieSearch([]);
+    try {
+      const url = `https://api.themoviedb.org/3/search/movie?query=${searchVal}&include_adult=false&language=vi&page=1`;
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+        },
+      };
+      const searchMovie = await fetch(url, options);
+      const data = await searchMovie.json();
 
+      setMovieSearch(data.results);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     const fetchMovies = async () => {
       const options = {
@@ -15,23 +37,38 @@ function App() {
           Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
         },
       };
-      const url =
+      const url1 =
         "https://api.themoviedb.org/3/movie/popular?language=vi&page=1";
-      const response = await fetch(url, options);
-      const data = await response.json();
-      setMovie(data.results);
-      console.log("check results", data.results);
+      const url2 =
+        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1";
+      const [res1, res2] = await Promise.all([
+        fetch(url1, options),
+        fetch(url2, options),
+      ]);
+      const data1 = await res1.json();
+      const data2 = await res2.json();
+      setMovie(data1.results);
+      setRatingMovie(data2.results);
     };
     fetchMovies();
   }, []);
 
   return (
     <>
-      <div className="bg-black pb-10">
-        <Header />
-        <Banner />
-        <MovieList title={"Phim Hot"} data={Moive.slice(0, 5)} />
-      </div>
+      <MovieProvider>
+        <div className="bg-black pb-10">
+          <Header onSearch={handleSearch} />
+          <Banner />
+          {movieSearch.length > 0 ? (
+            <MovieSearch title={"Kết quả tìm kiếm"} data={movieSearch} />
+          ) : (
+            <>
+              <MovieList title={"Phim Hot"} data={Movie} />
+              <MovieList title={"Phim Hot"} data={ratingMovie} />
+            </>
+          )}
+        </div>
+      </MovieProvider>
     </>
   );
 }

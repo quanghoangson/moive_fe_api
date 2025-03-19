@@ -1,4 +1,18 @@
-const Header = () => {
+import { useState } from "react";
+
+const Header = ({ onSearch }) => {
+  const [movieKey, setMovieKey] = useState("");
+
+  // const handleKeySearch = async (e) => {
+  //   console.log(e.target.value);
+  //   setMovieKey("");
+  //   try {
+  //     setMovieKey(e.target.value);
+  //     onSearch(movieKey);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   return (
     <div className="p-4 bg-black flex items-center justify-between ">
       <div className="flex items-center space-x-4">
@@ -21,8 +35,15 @@ const Header = () => {
           type="text"
           placeholder="Seacrch"
           className="p-3 text-black bg-white"
+          onChange={(e) => setMovieKey(e.target.value)}
+          value={movieKey}
         />
-        <button className="p-2 text-white bg-red-600">Search</button>
+        <button
+          className="p-2 text-white bg-red-600"
+          onClick={() => onSearch(movieKey)}
+        >
+          Search
+        </button>
       </div>
     </div>
   );
